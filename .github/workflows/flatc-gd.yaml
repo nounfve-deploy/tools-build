@@ -6,16 +6,30 @@ on:
         description: "Run the build with ssh debugging enabled"
         required: false
         default: "false"
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: 'enetheru/godot-flatbuffers'
+          ref: binary
+      - uses: actions/checkout@v4
+        with:
+          repository: "enetheru/godot-flatbuffers"
+          path: flatc.gd
       - uses: owenthereal/action-upterm@v2
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         timeout-minutes: 30
       - run: |
+          mkdir -p "./${RUNNER_OS}/"
+          cd flatc.gd
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build
+          cmake --build build --config release
+          cp project/addons/enetheru.flatbuffers-extension/bin/flatc* "../${RUNNER_OS}/"
+        shell: bash
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "build from github action"
+          file_pattern: "${RUNNER_OS}/*"
