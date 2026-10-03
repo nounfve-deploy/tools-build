@@ -32,4 +32,4 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "build from github action"
-          file_pattern: "${RUNNER_OS}/*"
+          file_pattern: ${{ runner.os }}/*
